@@ -129,11 +129,7 @@ function InnerMemberSidear({ serverId }: { serverId: string }) {
                   onlineIds.has(member.id) && (
                     <div key={member.id} className=" w-full px-[0.5rem] ">
                       <button
-                        onClick={() =>
-                          session?.user?.id === member.id
-                            ? null
-                            : checkUserChannel(member)
-                        }
+                        onClick={() => checkUserChannel(member)}
                         disabled={loading}
                         className="group flex justify-between items-center py-[0.25rem] px-[0.5rem] rounded-[0.5rem] cursor-pointer hover:bg-[var(--test)] w-full disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -174,11 +170,7 @@ function InnerMemberSidear({ serverId }: { serverId: string }) {
               onlineIds.has(member.id) && (
                 <div key={member.id} className="w-full px-[0.5rem]">
                   <button
-                    onClick={() =>
-                      session?.user?.id === member.id
-                        ? null
-                        : checkUserChannel(member)
-                    }
+                    onClick={() => checkUserChannel(member)}
                     disabled={loading}
                     className="group flex justify-between items-center py-[0.25rem] px-[0.5rem] rounded-[0.5rem] cursor-pointer hover:bg-[var(--test)] w-full disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -208,11 +200,7 @@ function InnerMemberSidear({ serverId }: { serverId: string }) {
               !onlineIds.has(member.id) && (
                 <div key={member.id} className=" w-full ">
                   <button
-                    onClick={() =>
-                      session?.user?.id === member.id
-                        ? null
-                        : checkUserChannel(member)
-                    }
+                    onClick={() => checkUserChannel(member)}
                     disabled={loading}
                     className="group flex justify-between items-center py-[0.25rem] rounded-[0.5rem] cursor-pointer hover:bg-[var(--test)] w-full disabled:opacity-50 disabled:cursor-not-allowed"
                   >

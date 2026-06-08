@@ -348,6 +348,19 @@ export const getServerChannels = async (serverId: string) => {
   });
 };
 
+export const getFriendChannel = async (userId: string, friendId: string) => {
+  return await prisma.channel.findFirst({
+    where: {
+      GroupChat: false,
+      serverType: false,
+      AND: [
+        { users: { some: { id: userId } } },
+        { users: { some: { id: friendId } } },
+      ],
+    },
+  });
+};
+
 // message queries
 export const createMessage = async (
   channelId: string,

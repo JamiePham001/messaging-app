@@ -27,10 +27,38 @@ export default function useCheckUserChannel() {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
 
-  function checkUserChannel(user: UserChannel) {
+  async function checkChatHistory(user: UserChannel) {
     if (loading) return;
     if (!session?.user?.id) return;
-    if (user?.channels.length === 0) {
+    if (!user) return;
+
+    try {
+      const res = await fetch(`/api/channels/get/friend?friendId=${user.id}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (res.status === 404) {
+        return null;
+      }
+
+      if (!res.ok) {
+        throw new Error(`Error fetching channel: ${res.statusText}`);
+      }
+
+      const data = await res.json();
+      const channel = data.channel;
+      return channel;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function checkUserChannel(user: UserChannel) {
+    if (loading) return;
+    if (!session?.user?.id) return;
+    const channel = await checkChatHistory(user);
+    if (!channel) {
       setLoading(true);
       fetch(`/api/channels/create`, {
         method: "POST",
@@ -52,7 +80,7 @@ export default function useCheckUserChannel() {
           setLoading(false);
         });
     } else {
-      router.push(`/channels/me/${user.channels[0].id}`);
+      router.push(`/channels/me/${channel.id}`);
     }
   }
 

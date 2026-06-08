@@ -78,6 +78,14 @@ function InnerDMSidebar({ userId }: { userId?: string }) {
     }
   };
 
+  const setInvisible = (channelId: string) => {
+    setChannels((prev) => prev.filter((c) => c.id !== channelId));
+    try {
+    } catch (error) {
+      console.error("Failed to update channel visibility:", error);
+    }
+  };
+
   return (
     <div className="flex h-full w-full shrink-0 flex-col items-center justify-start">
       <div className="h-[3rem] font-bold w-full flex items-center pl-[1rem] gap-[0.5rem] [border-bottom:1px_solid_DimGray]">
@@ -122,6 +130,7 @@ function InnerDMSidebar({ userId }: { userId?: string }) {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
+                              setInvisible(channel.id);
                             }}
                             type="submit"
                             className="flex items-center justify-center w-[2rem] h-[2rem] text-[1rem] cursor-pointer rounded-[2rem] text-DimGrey hover:text-white"
