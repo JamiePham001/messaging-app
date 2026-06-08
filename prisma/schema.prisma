@@ -5,9 +5,147 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  username      String?   @unique
+  password      String?
+  displayName   String?
+  createdAt     DateTime  @default(now())
+  status String? @default("OFFLINE") // ONLINE, OFFLINE, AWAY, DO_NOT_DISTURB
+
+  accounts         Account[]
+  sessions         Session[]
+  sentRequests     Friendship[] @relation("SentFriendRequests")
+  receivedRequests Friendship[] @relation("ReceivedFriendRequests")
+  channels         Channel[]    @relation("ChannelUsers")
+  servers          Server[]     @relation("ServerUsers")
+  sentMessages     Message[]    
+  userRoles       ServerRoles[] @relation("ServerRolesUsers")
+  exclusiveGroups  ServerChannelGroup[] @relation("ExclusiveGroupUsers")
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model Friendship {
+  id          String   @id @default(uuid())
+  requesterId String    
+  addresseeId String    
+  status      String  @default("STRANGER") // PENDING, ACCEPTED, BLOCKED
+  createdAt   DateTime @default(now())
+  acceptedAt  DateTime?
+
+  requester   User @relation("SentFriendRequests", fields: [requesterId], references: [id], onDelete: Cascade)
+  addressee   User @relation("ReceivedFriendRequests", fields: [addresseeId], references: [id], onDelete: Cascade)
+}
+
+model Channel {
+  id        String   @id @default(uuid())
+  SCGId     String?  // Server Channel Group ID (for organizational purposes)
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  visible Boolean @default(true) // when user closes a channel in their sidebar, it becomes invisible but not deleted
+  serverType Boolean @default(false) // true if channel belongs to a server, false if it's a DM
+  GroupChat Boolean @default(false)
+  
+  users      User[] @relation("ChannelUsers")
+  channelGroup ServerChannelGroup? @relation(fields: [SCGId], references: [id], onDelete: Cascade)
+  messages  Message[]
+  roles    ServerRoles[] @relation("ServerRolesChannels")
+}
+
+model Message {
+  id String @id @default(uuid())
+  channelId String
+  senderId String
+  content String
+  createdAt DateTime @default(now())
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model Server {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  public    Boolean @default(false)
+
+  users      User[] @relation("ServerUsers")
+  roles      ServerRoles[]
+  channelGroups ServerChannelGroup[]
+}
+
+model ServerRoles {
+  id String @id @default(uuid())
+  serverId String
+  role String @default("MEMBER") // OWNER, ADMIN, MEMBER
+  admin Boolean @default(false)
+  createdAt DateTime @default(now())
+  rank Int @default(0) // Higher rank means more permissions
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  users User[] @relation("ServerRolesUsers")
+  channels Channel[] @relation("ServerRolesChannels")
+  serverGroups ServerChannelGroup[] @relation("ServerRolesGroups")
+
+  @@unique([serverId, role])
+}
+
+model ServerChannelGroup {
+  id String @id @default(uuid())
+  serverId String
+  name String
+  createdAt DateTime @default(now())
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  channels Channel[]
+  roles ServerRoles[] @relation("ServerRolesGroups")
+  exclusiveUsers User[] @relation("ExclusiveGroupUsers")
 }
