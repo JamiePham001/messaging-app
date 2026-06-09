@@ -13,6 +13,7 @@ export const PATCH = auth(async function PATCH(req: NextAuthRequest) {
 
   try {
     const { channelId, visible } = await req.json();
+
     if (!channelId) {
       return NextResponse.json(
         { success: false, message: "Channel ID is required" },

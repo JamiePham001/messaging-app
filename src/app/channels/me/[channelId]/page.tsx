@@ -77,19 +77,6 @@ export default function DirectMessage() {
     fetchChatData();
   }, [channelId, router]);
 
-  // set channel to visible on the sidebar if it's currently invisible
-  if (chatData) {
-    if (chatData.visible === false) {
-      fetch("/api/channels/update", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ channelId, visible: true }),
-      });
-    }
-  }
-
   return (
     <>
       {channelId ? (

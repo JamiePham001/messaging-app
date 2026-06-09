@@ -134,10 +134,10 @@ export default function CreateServerChannel({
         const data = await res.json();
         const serverData = data.server as IServer;
         // remove current user from members pool. Dont need to be a viewable and selectable option
-        const filterUseres = serverData.users.filter(
+        const filterUsers = serverData.users.filter(
           (user) => user.id !== session?.user?.id,
         );
-        setServerMembers(filterUseres);
+        setServerMembers(filterUsers);
       } catch (error) {
         console.error("Error fetching server members:", error);
       }
@@ -150,13 +150,11 @@ export default function CreateServerChannel({
   const createChannel = async () => {
     setLoading(true);
     toggleBtns(true);
-    // add current user to selected members if private category so they don't lock themselves out
-    if (privateCheck) {
-      setSelectedMembers((prevSelected) => [
-        ...prevSelected,
-        session?.user?.id as string,
-      ]);
-    }
+    // add current user to selected members if private so they don't lock themselves out
+    const exclusiveUserIds =
+      privateCheck && session?.user?.id
+        ? [...new Set([...selectedMembers, session.user.id])]
+        : selectedMembers;
 
     try {
       const res = await fetch("/api/server/channel/create", {
@@ -168,7 +166,7 @@ export default function CreateServerChannel({
           SCGId: SCGId,
           name: channelName,
           serverId: serverId,
-          exclusiveUserIds: selectedMembers,
+          exclusiveUserIds: exclusiveUserIds,
           exclusiveRolesIds: selectedRoles,
         }),
       });
@@ -371,7 +369,7 @@ export default function CreateServerChannel({
                       <button
                         id="create-server-button"
                         onClick={() => createChannel()}
-                        className={`w-full p-[0.5rem] bg-[cornflowerblue] rounded-[6px]  text-white  ${loading ? "hover:bg-[var(--button-hover)] cursor-pointer" : "opacity-50"}`}
+                        className={`w-full p-[0.5rem] bg-[cornflowerblue] rounded-[6px]  text-white disabled:cursor-not-allowed ${loading ? "opacity-50" : " hover:bg-[var(--button-hover)] cursor-pointer"}`}
                         disabled={loading}
                       >
                         Skip
@@ -380,7 +378,7 @@ export default function CreateServerChannel({
                       <button
                         id="create-server-button"
                         onClick={() => createChannel()}
-                        className={`w-full p-[0.5rem] bg-[var(--button)] rounded-[6px]  text-white  ${loading ? "hover:bg-[var(--button-hover)] cursor-pointer" : "opacity-50"}`}
+                        className={`w-full p-[0.5rem] bg-[var(--button)] rounded-[6px]  text-white disabled:cursor-not-allowed ${loading ? "opacity-50" : " hover:bg-[var(--button-hover)] cursor-pointer"}`}
                         disabled={loading}
                       >
                         Create Channel

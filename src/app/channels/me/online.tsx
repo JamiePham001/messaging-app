@@ -58,7 +58,7 @@ function OnlineInner({ data }: { data: UserChannel[] }) {
                   >
                     <div>
                       <div className="flex items-center gap-[1rem]">
-                        <ProfilePicture username={user.username} />
+                        <ProfilePicture username={user.displayName} />
                         <div className="flex flex-col">
                           <p>{user.displayName}</p>
                           <p className="text-[gray] text-[0.8rem] self-start">

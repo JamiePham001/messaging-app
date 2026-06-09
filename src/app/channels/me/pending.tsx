@@ -127,7 +127,7 @@ export default function Pending({ userId }: { userId: string }) {
                   <div className="group flex justify-between items-center p-[0.5rem] rounded-[0.5rem] cursor-pointer hover:bg-[var(--test)]">
                     <div>
                       <div className="flex items-center gap-[1rem]">
-                        <ProfilePicture username={request.username} />
+                        <ProfilePicture username={request.displayName} />
                         <div className="flex flex-col">
                           <p>{request.displayName}</p>
                           <p>{request.username}</p>
@@ -175,7 +175,7 @@ export default function Pending({ userId }: { userId: string }) {
                   <div className="group flex justify-between items-center p-[0.5rem] rounded-[0.5rem] cursor-pointer hover:bg-[var(--test)]">
                     <div>
                       <div className="flex items-center gap-[1rem]">
-                        <ProfilePicture username={request.username} />
+                        <ProfilePicture username={request.displayName} />
                         <div className="flex flex-col">
                           <p>{request.displayName}</p>
                           <p className="text-[gray] text-[0.8rem]">

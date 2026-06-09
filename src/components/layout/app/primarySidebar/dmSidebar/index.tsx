@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import ProfilePicture from "@/components/layout/app/profilePicture";
 import Link from "next/link";
 import { ChannelProvider, usePresenceListener } from "ably/react";
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface IChannel {
   id: string;
@@ -33,12 +35,16 @@ export default function DMSidebar({ userId }: { userId?: string }) {
 function InnerDMSidebar({ userId }: { userId?: string }) {
   const [channels, setChannels] = useState<IChannelWithUsers[]>([]);
 
+  const params = useParams<{ channelId: string }>();
+  const channelId = params?.channelId;
+
   const { presenceData } = usePresenceListener("online-status");
   const onlineIds = new Set(presenceData.map((m) => m.clientId));
 
+  const router = useRouter();
+
   useEffect(() => {
     if (!userId) return;
-
     const fetchUserChannels = async () => {
       try {
         fetch(`/api/channels/get/user/${userId}`).then((res) =>
@@ -56,6 +62,59 @@ function InnerDMSidebar({ userId }: { userId?: string }) {
     };
     fetchUserChannels();
   }, [userId]);
+
+  useEffect(() => {
+    if (!channelId) return;
+    if (!userId) return;
+    if (channels.find((c) => c.id === channelId)) return;
+
+    const fetchUserChannels = async () => {
+      try {
+        fetch(`/api/channels/get/user/${userId}`).then((res) =>
+          res.json().then((data) => {
+            if (!data.success) {
+              console.error("Failed to fetch channels:", data.message);
+              return;
+            }
+            setChannels(data.channel ?? []);
+          }),
+        );
+      } catch (error) {
+        console.error("Failed to fetch channels:", error);
+      }
+    };
+
+    const setVisible = async (channelId: string) => {
+      try {
+        const res = await fetch(`/api/channels/update`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ channelId, visible: true }),
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          console.error(
+            "Failed to update channel visibility:",
+            errorData.message || res.statusText,
+          );
+          return;
+        }
+
+        const data = await res.json();
+
+        if (!data.success) return;
+
+        fetchUserChannels();
+      } catch (error) {
+        console.error("Failed to update channel visibility:", error);
+      }
+    };
+
+    setVisible(channelId);
+  }, [channelId, channels, userId]);
 
   const onSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -78,9 +137,26 @@ function InnerDMSidebar({ userId }: { userId?: string }) {
     }
   };
 
-  const setInvisible = (channelId: string) => {
-    setChannels((prev) => prev.filter((c) => c.id !== channelId));
+  const setInvisible = async (channelId: string) => {
     try {
+      const res = await fetch(`/api/channels/update`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ channelId, visible: false }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error(
+          "Failed to update channel visibility:",
+          errorData.message || res.statusText,
+        );
+        return;
+      }
+
+      setChannels((prev) => prev.filter((c) => c.id !== channelId));
     } catch (error) {
       console.error("Failed to update channel visibility:", error);
     }
@@ -131,6 +207,10 @@ function InnerDMSidebar({ userId }: { userId?: string }) {
                             onClick={(e) => {
                               e.stopPropagation();
                               setInvisible(channel.id);
+                              if (channelId === channel.id) {
+                                router.push("/channels/me");
+                                // router.refresh();
+                              }
                             }}
                             type="submit"
                             className="flex items-center justify-center w-[2rem] h-[2rem] text-[1rem] cursor-pointer rounded-[2rem] text-DimGrey hover:text-white"

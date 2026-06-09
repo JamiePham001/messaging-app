@@ -4,17 +4,25 @@ import Modal from "@/src/components/modal/createServer";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { IServer } from "@/src/types";
+import { useParams } from "next/navigation";
 
 export default function CommunityServer() {
   const [showModal, setShowModal] = useState(false);
   const [servers, setServers] = useState<IServer[]>([]);
   const { data: session } = useSession();
 
+  const params = useParams<{ serverId: string }>();
+  const serverId = params?.serverId;
+
+  const userId = session?.user?.id;
+
   useEffect(() => {
+    if (!userId) return;
+
     const fetchServers = async () => {
       try {
         const response = await fetch(
-          `/api/server/get/userId?userId=${session?.user?.id}`,
+          `/api/server/get/userId?userId=${userId}`,
           {
             method: "GET",
             headers: {
@@ -28,15 +36,18 @@ export default function CommunityServer() {
           return;
         }
 
+        if (serverId) {
+          setServers(data.servers);
+          return;
+        }
         setServers(data.servers);
       } catch (error) {
         console.error("Failed to fetch servers:", error);
       }
     };
-    if (session?.user?.id) {
-      fetchServers();
-    }
-  }, [session]);
+
+    fetchServers();
+  }, [userId, serverId]);
 
   return (
     <section className="flex flex-col items-center justify-start w-[4rem] h-full p-[0.5rem] gap-[0.5rem]">

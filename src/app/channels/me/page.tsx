@@ -44,15 +44,17 @@ export default function LoggedUser() {
   const { data: sessionData, status } = useSession();
   const [friendsList, setFriendsList] = useState<UserChannel[]>([]);
 
+  const userId = sessionData?.user?.id;
+
   useEffect(() => {
-    if (!sessionData?.user?.id) return;
-    fetch(`/api/friends/get/${sessionData.user.id}`)
+    if (!userId) return;
+    fetch(`/api/friends/get/${userId}`)
       .then((res) => res.json())
       .then((data) => setFriendsList(data.friends))
       .catch((error) => {
         console.error("Error fetching friends list:", error);
       });
-  }, [sessionData?.user?.id]);
+  }, [userId]);
 
   useEffect(() => {
     console.log("Friends List Updated:", friendsList);
@@ -64,14 +66,12 @@ export default function LoggedUser() {
 
       {navId === "online" && <Online data={friendsList} />}
       {navId === "all" && <All data={friendsList} />}
-      {navId === "pending" &&
-        (status === "loading" ? null : (
-          <Pending userId={sessionData?.user?.id ?? ""} />
-        ))}
-      {navId === "addFriend" &&
-        (status === "loading" ? null : (
-          <AddFriend userId={sessionData?.user?.id ?? ""} />
-        ))}
+      {userId &&
+        navId === "pending" &&
+        (status === "loading" ? null : <Pending userId={userId} />)}
+      {userId &&
+        navId === "addFriend" &&
+        (status === "loading" ? null : <AddFriend userId={userId} />)}
     </main>
   );
 }

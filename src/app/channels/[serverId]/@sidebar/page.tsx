@@ -74,6 +74,7 @@ export default function ServerPage() {
   }, [serverId, router]);
 
   // check for any invited or new users to the server and add them to the channel's user list if they are not already in it
+  // Only a temporary solution. This doesnt allow for the deletion of useres still active in the server
   useEffect(() => {
     const addUserToServer = async () => {
       try {
