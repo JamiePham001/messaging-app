@@ -22,7 +22,7 @@ export const GET = auth(async function GET(
   try {
     const userId = req.auth?.user?.id;
     const channel = await getChannelById(channelId);
-    if (!channel?.users.find((u) => u.id === userId)) {
+    if (!channel?.users.find((u: { id: string }) => u.id === userId)) {
       return NextResponse.json(
         { success: false, message: "Channel not found or access denied" },
         { status: 404 },
