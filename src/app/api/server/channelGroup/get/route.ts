@@ -53,7 +53,7 @@ export const GET = auth(async function GET(req: NextAuthRequest) {
         );
 
     const filteredGroups = serverGroups
-      .map((group) => {
+      .map((group: (typeof serverGroups)[0]) => {
         // Public group — no group-level restrictions, but still filter channels
         if (group.exclusiveUsers.length === 0 && group.roles.length === 0) {
           return { ...group, channels: filterChannels(group.channels) };
