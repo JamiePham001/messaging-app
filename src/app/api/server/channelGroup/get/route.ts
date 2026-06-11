@@ -32,7 +32,7 @@ export const GET = auth(async function GET(req: NextAuthRequest) {
 
     const filterChannels = (channels: (typeof serverGroups)[0]["channels"]) =>
       channels
-        .map((channel) => {
+        .map((channel: (typeof serverGroups)[0]["channels"][0]) => {
           if (channel.users.length === 0 && channel.roles.length === 0) {
             return channel;
           }
