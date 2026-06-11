@@ -36,12 +36,21 @@ export const GET = auth(async function GET(req: NextAuthRequest) {
           if (channel.users.length === 0 && channel.roles.length === 0) {
             return channel;
           }
-          return channel.users.some((user: { id: string }) => user.id === userId) ||
-            channel.roles.some((role: { id: string }) => userRoles.includes(role.id))
+          return channel.users.some(
+            (user: { id: string }) => user.id === userId,
+          ) ||
+            channel.roles.some((role: { id: string }) =>
+              userRoles.includes(role.id),
+            )
             ? channel
             : null;
         })
-        .filter((channel) => channel !== null);
+        .filter(
+          (
+            channel: (typeof serverGroups)[0]["channels"][0] | null,
+          ): channel is (typeof serverGroups)[0]["channels"][0] =>
+            channel !== null,
+        );
 
     const filteredGroups = serverGroups
       .map((group) => {
@@ -52,8 +61,12 @@ export const GET = auth(async function GET(req: NextAuthRequest) {
 
         // User has no access to this group — exclude it entirely
         if (
-          !group.exclusiveUsers.some((user: { id: string }) => user.id === userId) &&
-          !group.roles.some((role: { id: string }) => userRoles.includes(role.id))
+          !group.exclusiveUsers.some(
+            (user: { id: string }) => user.id === userId,
+          ) &&
+          !group.roles.some((role: { id: string }) =>
+            userRoles.includes(role.id),
+          )
         ) {
           return null;
         }
@@ -61,7 +74,11 @@ export const GET = auth(async function GET(req: NextAuthRequest) {
         // User has access to the group — filter channels based on user access
         return { ...group, channels: filterChannels(group.channels) };
       })
-      .filter((group) => group !== null);
+      .filter(
+        (
+          group: (typeof serverGroups)[0] | null,
+        ): group is (typeof serverGroups)[0] => group !== null,
+      );
 
     // return all groups and channels if user is an admin, otherwise return filtered groups and channels
     if (isAdmin) {
