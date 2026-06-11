@@ -120,6 +120,7 @@ model Server {
   users      User[] @relation("ServerUsers")
   roles      ServerRoles[]
   channelGroups ServerChannelGroup[]
+  invites    ServerInvite[]
 }
 
 model ServerRoles {
@@ -148,4 +149,14 @@ model ServerChannelGroup {
   channels Channel[]
   roles ServerRoles[] @relation("ServerRolesGroups")
   exclusiveUsers User[] @relation("ExclusiveGroupUsers")
+}
+
+model ServerInvite {
+  id String @id @default(uuid())
+  serverId String
+  code String @unique
+  expiresAt DateTime @default(dbgenerated("CURRENT_TIMESTAMP + INTERVAL '30 days'"))
+  createdAt DateTime @default(now())
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
 }

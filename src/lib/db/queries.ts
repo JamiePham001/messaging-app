@@ -116,6 +116,26 @@ export const getPendingFriendRequests = async (userId: string) => {
   });
 };
 
+export const checkRequestExists = async (
+  senderId: string,
+  receiverId: string,
+) => {
+  return await prisma.friendship.findFirst({
+    where: {
+      OR: [
+        {
+          requesterId: senderId,
+          addresseeId: receiverId,
+        },
+        {
+          requesterId: receiverId,
+          addresseeId: senderId,
+        },
+      ],
+    },
+  });
+};
+
 export const getSentFriendRequests = async (userId: string) => {
   return await prisma.user.findMany({
     where: {
@@ -654,6 +674,50 @@ export const getSCGByServerId = async (serverId: string) => {
     },
     orderBy: {
       createdAt: "asc",
+    },
+  });
+};
+
+// server invite queries
+export const checkServerInviteExists = async (serverId: string) => {
+  return await prisma.serverInvite.findFirst({
+    where: {
+      serverId,
+    },
+  });
+};
+
+const generateInviteCode = () => {
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let code = "";
+  for (let i = 0; i < 8; i++) {
+    code += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return code;
+};
+
+export const createServerInvite = async (serverId: string) => {
+  const code = generateInviteCode();
+  return await prisma.serverInvite.create({
+    data: {
+      serverId,
+      code,
+    },
+  });
+};
+
+export const getServerInviteByCode = async (code: string) => {
+  return await prisma.serverInvite.findFirst({
+    where: {
+      code,
+    },
+    include: {
+      server: {
+        select: {
+          name: true,
+        },
+      },
     },
   });
 };

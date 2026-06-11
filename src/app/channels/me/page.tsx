@@ -19,6 +19,7 @@ interface IFriendsList {
   displayName: string;
   email: string;
   status: string;
+  channels: IChannel[];
 }
 
 interface IChannel {
@@ -26,10 +27,6 @@ interface IChannel {
   friendshipId: string | null;
   createdAt: string;
   updatedAt: string;
-}
-
-interface UserChannel extends IFriendsList {
-  channels: IChannel[];
 }
 
 const menuItems: IMenuItem[] = [
@@ -42,7 +39,7 @@ const menuItems: IMenuItem[] = [
 export default function LoggedUser() {
   const [navId, setNavId] = useState<string>("online");
   const { data: sessionData, status } = useSession();
-  const [friendsList, setFriendsList] = useState<UserChannel[]>([]);
+  const [friendsList, setFriendsList] = useState<IFriendsList[]>([]);
 
   const userId = sessionData?.user?.id;
 

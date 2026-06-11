@@ -73,39 +73,6 @@ export default function ServerPage() {
     fetchChatData();
   }, [serverId, router]);
 
-  // check for any invited or new users to the server and add them to the channel's user list if they are not already in it
-  // Only a temporary solution. This doesnt allow for the deletion of useres still active in the server
-  useEffect(() => {
-    const addUserToServer = async () => {
-      try {
-        const res = await fetch(
-          `/api/server/update/user-list?serverId=${serverId}&userId=${session?.user?.id}`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          },
-        );
-
-        if (!res.ok) {
-          console.error("Failed to add user to server:", res.status);
-          router.push("/channels/me");
-          return;
-        }
-      } catch (error) {
-        console.error("Error adding user to server:", error);
-      }
-    };
-
-    if (chatData && session?.user?.id) {
-      const isMember = chatData.users.some((u) => u.id === session.user.id);
-      if (!isMember) {
-        addUserToServer();
-      }
-    }
-  }, [chatData, session, router, serverId]);
-
   return (
     <>
       {serverId && chatData?.id ? (

@@ -17,25 +17,22 @@ interface IBaseUser {
   email: string;
   createdAt: string;
   status: string;
-}
-
-interface IReceivedRequestUser extends IBaseUser {
   sentRequests: IFriendRequest[];
-}
-
-interface ISentRequestUser extends IBaseUser {
   receivedRequests: IFriendRequest[];
 }
 
-export default function Pending({ userId }: { userId: string }) {
-  const [receivedRequests, setReceivedRequests] = useState<
-    IReceivedRequestUser[]
-  >([]);
-  const [sentRequests, setSentRequests] = useState<ISentRequestUser[]>([]);
+interface PageParams {
+  userId?: string;
+}
+
+export default function Pending({ userId }: PageParams) {
+  const [receivedRequests, setReceivedRequests] = useState<IBaseUser[]>([]);
+  const [sentRequests, setSentRequests] = useState<IBaseUser[]>([]);
 
   useEffect(() => {
     if (!userId) return;
 
+    // fetch received friend requests
     fetch(`/api/friends/get/requests?userId=${userId}`, {
       method: "GET",
     })
@@ -49,6 +46,7 @@ export default function Pending({ userId }: { userId: string }) {
         console.error("Error fetching received friend requests:", error);
       });
 
+    // fetch sent friend requests
     fetch(`/api/friends/get/sent?userId=${userId}`, {
       method: "GET",
     })

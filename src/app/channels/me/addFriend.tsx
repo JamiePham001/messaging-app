@@ -8,6 +8,7 @@ export default function AddFriend({ userId }: { userId: string }) {
   const onsubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    // check if user exists
     const receiverId: { success: boolean; userId?: string } = await fetch(
       `/api/user/get/userId/${username}`,
     ).then((res) => res.json());
@@ -17,6 +18,17 @@ export default function AddFriend({ userId }: { userId: string }) {
       return;
     }
 
+    // check if friend request already exists
+    const existingRequest = await fetch(
+      `/api/friends/get/existingRequest?senderId=${userId}&receiverId=${receiverId.userId}`,
+    ).then((res) => res.json());
+
+    if (existingRequest.success) {
+      setError("Friend request already exists");
+      return;
+    }
+
+    // create friend request
     const friendRequest = await fetch("/api/friends/create", {
       method: "POST",
       headers: {
@@ -36,11 +48,17 @@ export default function AddFriend({ userId }: { userId: string }) {
       return;
     }
 
-    if (friendRequest.ok) {
-      setError("");
-      setSuccess("Friend request sent");
-      setUsername("");
+    const data = await friendRequest.json();
+    if (!data.success) {
+      setError(data.message || "Failed to send friend request");
+      setSuccess("");
+      return;
     }
+
+    setError("");
+    setSuccess("Friend request sent");
+    setUsername("");
+    const requestData = data.friendRequest;
   };
   return (
     <div className="w-full h-full flex flex-col p-[2rem] gap-[1rem]">

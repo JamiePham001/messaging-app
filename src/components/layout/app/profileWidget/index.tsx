@@ -2,7 +2,7 @@
 import ProfilePicture from "../profilePicture";
 import Image from "next/image";
 import { signOut } from "next-auth/react";
-import { useChatConnection } from "@ably/chat/react";
+// import { useChatConnection } from "@ably/chat/react";
 
 export default function ProfileWidget(userData: {
   displayName: string | null;
@@ -10,7 +10,7 @@ export default function ProfileWidget(userData: {
   status: string | null;
   username: string | null;
 }) {
-  const { currentStatus } = useChatConnection();
+  // const { currentStatus } = useChatConnection();
   return (
     <section className="h-[3.5rem] w-full flex items-start justify-center pl-[0.5rem] pr-[0.5rem] pb-[0.3rem]">
       <div className="w-full h-full bg-[var(--secondary)] rounded-[0.5rem] p-[0.5rem] flex items-center justify-between">
@@ -19,7 +19,8 @@ export default function ProfileWidget(userData: {
           <div className="flex flex-col items-start justify-start ">
             <div className="profile-name">{userData.displayName}</div>
             <div className="text-[0.8rem] text-[dimgray]">
-              {currentStatus ? <div>Online</div> : <div>Offline</div>}
+              {/* {currentStatus ? <div>Online</div> : <div>Offline</div>} */}
+              {userData.username}
             </div>
           </div>
         </div>

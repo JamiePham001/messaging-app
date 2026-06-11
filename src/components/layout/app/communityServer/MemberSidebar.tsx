@@ -129,7 +129,10 @@ function InnerMemberSidear({ serverId }: { serverId: string }) {
                   onlineIds.has(member.id) && (
                     <div key={member.id} className=" w-full px-[0.5rem] ">
                       <button
-                        onClick={() => checkUserChannel(member)}
+                        onClick={() => {
+                          if (member.id === session?.user?.id) return;
+                          checkUserChannel(member);
+                        }}
                         disabled={loading}
                         className="group flex justify-between items-center py-[0.25rem] px-[0.5rem] rounded-[0.5rem] cursor-pointer hover:bg-[var(--test)] w-full disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -170,7 +173,10 @@ function InnerMemberSidear({ serverId }: { serverId: string }) {
               onlineIds.has(member.id) && (
                 <div key={member.id} className="w-full px-[0.5rem]">
                   <button
-                    onClick={() => checkUserChannel(member)}
+                    onClick={() => {
+                      if (member.id === session?.user?.id) return;
+                      checkUserChannel(member);
+                    }}
                     disabled={loading}
                     className="group flex justify-between items-center py-[0.25rem] px-[0.5rem] rounded-[0.5rem] cursor-pointer hover:bg-[var(--test)] w-full disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -198,9 +204,12 @@ function InnerMemberSidear({ serverId }: { serverId: string }) {
           {serverMembers.map(
             (member) =>
               !onlineIds.has(member.id) && (
-                <div key={member.id} className=" w-full ">
+                <div key={member.id} className=" w-full opacity-50">
                   <button
-                    onClick={() => checkUserChannel(member)}
+                    onClick={() => {
+                      if (member.id === session?.user?.id) return;
+                      checkUserChannel(member);
+                    }}
                     disabled={loading}
                     className="group flex justify-between items-center py-[0.25rem] rounded-[0.5rem] cursor-pointer hover:bg-[var(--test)] w-full disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -208,9 +217,6 @@ function InnerMemberSidear({ serverId }: { serverId: string }) {
                       <ProfilePicture username={member.displayName} />
                       <div className="flex flex-col">
                         <p>{member.displayName}</p>
-                        <p className="text-[gray] text-[0.8rem] self-start">
-                          Offline
-                        </p>
                       </div>
                     </div>
                   </button>

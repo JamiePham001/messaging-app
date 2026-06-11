@@ -12,6 +12,13 @@ interface ModalProps {
   serverId: string;
 }
 
+interface Invite {
+  code: string;
+  serverId: string;
+  expiresAt: string;
+  createdAt: string;
+}
+
 export default function ServerInvite({
   onClose,
   serverName,
@@ -23,37 +30,81 @@ export default function ServerInvite({
   };
   const { data: session } = useSession();
 
-  const [userSearchInput, setUserSearchInput] = useState("");
-  const [friendsList, setFriendsList] = useState<IUser[]>([]);
+  const [inviteCode, setInviteCode] = useState<Invite | null>(null);
 
-  const serverLink = `localhost:3000/channels/${serverId}`;
   const [copied, setCopied] = useState(false);
 
+  const serverLink = `${process.env.NEXT_PUBLIC_URL}/invite/`;
+
   useEffect(() => {
-    const fetchFriends = async () => {
+    if (!session?.user.id) return;
+
+    const createInvite = async () => {
       try {
-        const res = await fetch(`/api/friends/get/${session?.user.id}`, {
+        const res = await fetch("/api/server/invite/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ serverId }),
+        });
+        if (!res.ok) {
+          console.error("Failed to create server invite");
+          return;
+        }
+        const data = await res.json();
+        if (!data.success) {
+          console.error("Error creating server invite:", data.message);
+          return;
+        }
+        setInviteCode(data.invite);
+      } catch (error) {
+        console.error("Error creating server invite:", error);
+      }
+    };
+
+    const getInviteCode = async () => {
+      try {
+        const res = await fetch(`/api/server/invite/get?serverId=${serverId}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
         });
-        if (!res.ok) {
-          console.error("Failed to fetch friends list");
+        if (res.status === 404) {
+          createInvite();
           return;
         }
-        const data = await res.json();
-        if (data.success) {
-          setFriendsList(data.friends);
-        } else {
-          console.error("Error fetching friends list:", data.message);
+
+        if (!res.ok) {
+          console.error("failed to fetch server invite code");
+          return;
         }
+
+        const data = await res.json();
+
+        if (!data.success) {
+          console.error("Error fetching server invite code:", data.message);
+          return;
+        }
+
+        if (
+          data.invite.expiresAt &&
+          new Date(data.invite.expiresAt) < new Date()
+        ) {
+          createInvite();
+          return;
+        }
+
+        setInviteCode(data.invite);
       } catch (error) {
-        console.error("Error fetching friends list:", error);
+        console.error("Error fetching server invite code:", error);
+        createInvite();
       }
     };
-    fetchFriends();
-  }, [session?.user.id]);
+
+    getInviteCode();
+  }, [session?.user.id, serverId]);
 
   const modalContent = (
     <div
@@ -67,7 +118,7 @@ export default function ServerInvite({
       {/* Wrap the whole Modal inside the newly created StyledModalWrapper
               and use the ref */}
       <motion.div
-        className="w-[400px] bg-[var(--primary)] rounded-[8px] p-[0.5rem] bg-[var(--secondary)]"
+        className="w-[450px] bg-[var(--primary)] rounded-[8px] p-[0.5rem] bg-[var(--secondary)]"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
@@ -77,8 +128,7 @@ export default function ServerInvite({
           <div className="grid grid-cols-[1fr_5fr_1fr]">
             <div></div>
             <h1 className="text-center text-[1.3rem] flex ">
-              Invite friends to
-              <div className="test-bold-900 px-[0.3rem]">{serverName}</div>
+              {`Invite friends to ${serverName}`}
             </h1>
             <a
               href="#"
@@ -91,77 +141,60 @@ export default function ServerInvite({
 
           <div className="w-full h-full flex">
             <div className="w-full h-full flex-col flex items-center gap-[1rem]">
-              <input
-                id="server-name-input"
-                type="text"
-                placeholder="Search for friends"
-                onChange={(e) => setUserSearchInput(e.target.value)}
-                value={userSearchInput}
-                className="w-full p-[0.5rem] rounded-[6px] bg-[var(--test)] text-white focus:outline-none"
-              />
-              <div className="flex flex-col w-full justify-between h-[20rem] overflow-y-auto">
-                {friendsList.filter(
-                  (friend) =>
-                    friend.displayName
-                      .toLowerCase()
-                      .includes(userSearchInput.toLowerCase()) ||
-                    friend.username
-                      .toLowerCase()
-                      .includes(userSearchInput.toLowerCase()),
-                ).length === 0 && (
-                  <p className="text-center text-[gray] mt-[2rem]">
-                    No friends found matching &quot;{userSearchInput}&quot;
-                  </p>
-                )}
-                {friendsList
-                  .filter(
-                    (friend) =>
-                      friend.displayName
-                        .toLowerCase()
-                        .includes(userSearchInput.toLowerCase()) ||
-                      friend.username
-                        .toLowerCase()
-                        .includes(userSearchInput.toLowerCase()),
-                  )
-                  .map((friend) => (
-                    <div key={friend.id} className=" w-full ">
-                      <hr className="border-none h-[1px] bg-[DimGray] w-full self-center" />
-                      <div className="group flex justify-between items-center p-[0.5rem] rounded-[0.5rem] cursor-pointer hover:bg-[var(--test)] w-full disabled:opacity-50 disabled:cursor-not-allowed">
-                        <div className="flex items-center gap-[1rem]">
-                          <ProfilePicture username={friend.username} />
-                          <div className="flex flex-col">
-                            <p>{friend.displayName}</p>
-                            <p className="text-[gray] text-[0.8rem] self-start">
-                              {friend.username}
-                            </p>
-                          </div>
-                        </div>
-
-                        <button className="px-[0.5rem] py-[0.25rem] bg-[var(--test)] text-white rounded-[4px] cursor-pointer hover:bg-[var(--hover)]">
-                          Invite
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+              <div className="flex flex-col w-full ">
+                Copy the invite link to share it with others.
               </div>
 
               <div
                 className={`flex transition ease-in delay-100 duration-100 w-full gap-[0.5rem] mt-auto p-[0.5rem] rounded-[6px] ${copied ? "[border:1px_solid_green]" : "[border:1px_solid_var(--test)]"}`}
               >
-                <div className="serverLink w-full overflow-x-auto text-ellipsis">
-                  {serverLink}
-                </div>
-                <button
-                  className={`px-[0.5rem] transition ease-in delay-100 duration-100 py-[0.25rem] text-white rounded-[4px] cursor-pointer ${copied ? "bg-green-600 hover:bg-green-700" : "bg-[var(--button)] hover:bg-[var(--button-hover)]"}`}
-                  onClick={() => {
-                    navigator.clipboard.writeText(serverLink);
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
-                  }}
-                >
-                  {copied ? "Copied!" : "Copy"}
-                </button>
+                {inviteCode ? (
+                  <>
+                    <div className="serverLink w-full overflow-x-auto text-ellipsis">
+                      {`${serverLink}${inviteCode.code}`}
+                    </div>
+                    <button
+                      className={`px-[0.5rem] transition ease-in delay-100 duration-100 py-[0.25rem] text-white rounded-[4px] cursor-pointer ${copied ? "bg-green-600 hover:bg-green-700" : "bg-[var(--button)] hover:bg-[var(--button-hover)]"}`}
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          `${serverLink}${inviteCode.code}`,
+                        );
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                    >
+                      {copied ? "Copied!" : "Copy"}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="serverLink w-full overflow-x-auto text-ellipsis">
+                      {`${serverLink}`}
+                    </div>
+                    <button
+                      className={`px-[0.5rem] transition ease-in delay-100 duration-100 py-[0.25rem] text-white rounded-[4px] cursor-pointer ${copied ? "bg-green-600 hover:bg-green-700" : "bg-[var(--button)] hover:bg-[var(--button-hover)]"}`}
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${serverLink}`);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                    >
+                      {copied ? "Copied!" : "Copy"}
+                    </button>
+                  </>
+                )}
               </div>
+              {inviteCode && inviteCode.expiresAt && (
+                <div className="text-sm text-gray-500 self-start">
+                  Invite expires in:{" "}
+                  {Math.floor(
+                    (new Date(inviteCode.expiresAt).getTime() -
+                      new Date().getTime()) /
+                      (1000 * 60 * 60 * 24),
+                  ).toLocaleString()}{" "}
+                  days
+                </div>
+              )}
             </div>
           </div>
         </div>

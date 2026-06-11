@@ -44,3 +44,11 @@ export interface IServerGroup {
   channels: IChannel[];
   server: IServer;
 }
+
+export interface Invite {
+  code: string;
+  serverId: string;
+  server?: IServer;
+  expiresAt: string;
+  createdAt: string;
+}
