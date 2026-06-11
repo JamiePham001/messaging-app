@@ -105,10 +105,6 @@ NEXT_PUBLIC_URL="http://localhost:3000"
 
 DATABASE_URL="postgresql://<user>:<password>@localhost:5432/<db>"
 
-AUTH_SECRET="<random-secret>"
-AUTH_GITHUB_ID="<github-oauth-app-client-id>"
-AUTH_GITHUB_SECRET="<github-oauth-app-client-secret>"
-
 ABLY_API_KEY="<ably-api-key>"
 ```
 

@@ -1,5 +1,4 @@
 import NextAuth from "next-auth";
-import GitHub from "next-auth/providers/github";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import Credentials from "next-auth/providers/credentials";
@@ -12,7 +11,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 * 6 }, // 6 months
   providers: [
-    GitHub,
     Credentials({
       credentials: {
         email: {
