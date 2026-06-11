@@ -36,8 +36,8 @@ export const GET = auth(async function GET(req: NextAuthRequest) {
           if (channel.users.length === 0 && channel.roles.length === 0) {
             return channel;
           }
-          return channel.users.some((user) => user.id === userId) ||
-            channel.roles.some((role) => userRoles.includes(role.id))
+          return channel.users.some((user: { id: string }) => user.id === userId) ||
+            channel.roles.some((role: { id: string }) => userRoles.includes(role.id))
             ? channel
             : null;
         })
@@ -52,8 +52,8 @@ export const GET = auth(async function GET(req: NextAuthRequest) {
 
         // User has no access to this group — exclude it entirely
         if (
-          !group.exclusiveUsers.some((user) => user.id === userId) &&
-          !group.roles.some((role) => userRoles.includes(role.id))
+          !group.exclusiveUsers.some((user: { id: string }) => user.id === userId) &&
+          !group.roles.some((role: { id: string }) => userRoles.includes(role.id))
         ) {
           return null;
         }
