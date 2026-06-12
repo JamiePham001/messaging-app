@@ -165,8 +165,12 @@ export default function ServerContent() {
 
     const fetchChannels = async (roles: IRoles[]) => {
       try {
+        const roleParams =
+          roles.length > 0
+            ? `&userRoles[]=${roles.map((role) => role.id).join("&userRoles[]=")}`
+            : "";
         const response = await fetch(
-          `/api/server/channelGroup/get?serverId=${serverId}&userRoles[]=${roles.map((role) => role.id).join("&userRoles[]=")}`,
+          `/api/server/channelGroup/get?serverId=${serverId}${roleParams}`,
           {
             method: "GET",
             headers: {
@@ -203,7 +207,7 @@ export default function ServerContent() {
 
         const data = await res.json();
         const userRolesData = data.roles;
-        fetchChannels(userRolesData);
+        await fetchChannels(userRolesData);
         setUserRoles(userRolesData);
       } catch (error) {
         console.error("Error fetching roles:", error);

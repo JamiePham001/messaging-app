@@ -166,7 +166,7 @@ export default function ServerInvite({
                 ) : (
                   <>
                     <div className="serverLink w-full overflow-x-auto text-ellipsis x-overflow-hidden">
-                      {`${serverLink}`}
+                      Generating invite link...
                     </div>
                     <button
                       className={`px-[0.5rem] transition ease-in delay-100 duration-100 py-[0.25rem] text-white rounded-[4px] cursor-pointer ${copied ? "bg-green-600 hover:bg-green-700" : "bg-[var(--button)] hover:bg-[var(--button-hover)]"}`}
@@ -175,6 +175,7 @@ export default function ServerInvite({
                         setCopied(true);
                         setTimeout(() => setCopied(false), 2000);
                       }}
+                      disabled={true}
                     >
                       {copied ? "Copied!" : "Copy"}
                     </button>
