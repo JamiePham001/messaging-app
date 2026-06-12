@@ -15,7 +15,7 @@ export default function Home() {
   return (
     <div>
       <Header></Header>
-      <main className="flex column items-center justify-center h-[calc(100vh-6rem)]">
+      <main className="flex flex-col items-center justify-center h-[calc(100vh-6rem)] gap-4">
         <div className="text-[1.5rem]">Landing Page</div>
         <div className="italic">
           For demo accounts, my{" "}
@@ -30,7 +30,7 @@ export default function Home() {
         </div>
         {session?.user && (
           <div>
-            Welcome! <SignOut />
+            <SignOut />
           </div>
         )}
       </main>
