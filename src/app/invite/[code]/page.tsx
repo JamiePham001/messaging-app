@@ -45,10 +45,9 @@ export default function ServerInvitePage() {
         }
 
         // redirect to server if user is already a member
-        if (data.isMember) {
-          router.push(`/channels/${serverId}`);
-          setLoading(false);
-        }
+
+        router.push(`/channels/${serverId}`);
+        setLoading(false);
       } catch (error) {
         console.error("Error checking user membership:", error);
       }
