@@ -77,7 +77,9 @@ export default function ServerInvitePage() {
         }
 
         setInvite(data.invite);
-        checkUserMembership(data.invite.serverId);
+        if (session?.user?.id) {
+          await checkUserMembership(data.invite.serverId);
+        }
       } catch (error) {
         console.error("Error fetching invite:", error);
       } finally {
