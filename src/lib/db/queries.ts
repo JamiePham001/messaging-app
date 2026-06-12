@@ -483,6 +483,19 @@ export const getServerByUserId = async (userId: string) => {
   });
 };
 
+export const checkUserMembership = async (serverId: string, userId: string) => {
+  return await prisma.server.findFirst({
+    where: {
+      id: serverId,
+      users: {
+        some: {
+          id: userId,
+        },
+      },
+    },
+  });
+};
+
 export const deleteServer = async (serverId: string) => {
   return await prisma.server.delete({
     where: {

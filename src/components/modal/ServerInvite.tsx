@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import type { IUser, IRoles, IServerGroup, IServer } from "@/src/types";
-import ProfilePicture from "../layout/app/profilePicture";
 
 interface ModalProps {
   onClose: () => void;
@@ -150,7 +147,7 @@ export default function ServerInvite({
               >
                 {inviteCode ? (
                   <>
-                    <div className="serverLink w-full overflow-x-auto text-ellipsis">
+                    <div className="serverLink w-full overflow-x-auto text-ellipsis x-overflow-hidden">
                       {`${serverLink}${inviteCode.code}`}
                     </div>
                     <button
@@ -168,7 +165,7 @@ export default function ServerInvite({
                   </>
                 ) : (
                   <>
-                    <div className="serverLink w-full overflow-x-auto text-ellipsis">
+                    <div className="serverLink w-full overflow-x-auto text-ellipsis x-overflow-hidden">
                       {`${serverLink}`}
                     </div>
                     <button

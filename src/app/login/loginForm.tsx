@@ -3,14 +3,18 @@
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { LoadingCursor } from "@/lib/utiils/cursor/loading";
 
 export default function SigninForm({ callbackUrl }: { callbackUrl?: string }) {
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  LoadingCursor(loading);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    setLoading(true);
     const formData = new FormData(event.currentTarget);
 
     const result = await signIn("credentials", {
@@ -21,11 +25,13 @@ export default function SigninForm({ callbackUrl }: { callbackUrl?: string }) {
 
     if (result?.error) {
       setError("Invalid email or password.");
+      setLoading(false);
       return;
     }
 
     router.push(callbackUrl ?? "/channels/me");
     router.refresh();
+    setLoading(false);
   };
 
   return (
@@ -37,7 +43,8 @@ export default function SigninForm({ callbackUrl }: { callbackUrl?: string }) {
         type="email"
         id="email"
         name="email"
-        className="bg-[var(--inputs)] h-8 rounded p-2 caret-white border-solid border-[1px] border-[dimgray]"
+        disabled={loading}
+        className="bg-[var(--inputs)] h-8 rounded p-2 caret-white border-solid border-[1px] border-[dimgray] disabled:opacity-50"
         required
       />
       <label htmlFor="password" className="flex gap-1">
@@ -47,7 +54,8 @@ export default function SigninForm({ callbackUrl }: { callbackUrl?: string }) {
         type="password"
         id="password"
         name="password"
-        className="bg-[var(--inputs)] h-8 rounded p-2 caret-white border-solid border-[1px] border-[dimgray]"
+        disabled={loading}
+        className="bg-[var(--inputs)] h-8 rounded p-2 caret-white border-solid border-[1px] border-[dimgray] disabled:opacity-50"
         required
       />
 
@@ -55,9 +63,10 @@ export default function SigninForm({ callbackUrl }: { callbackUrl?: string }) {
       {error && <p className="text-[salmon] text-sm">{error}</p>}
       <button
         type="submit"
-        className="bg-[cornflowerblue] h-8 p-2 rounded text-white pointer hover:bg-[dodgerblue] transition-colors duration-300 justify-center items-center flex"
+        disabled={loading}
+        className="bg-[cornflowerblue] h-8 p-2 rounded text-white pointer hover:bg-[dodgerblue] transition-colors duration-300 justify-center items-center flex disabled:opacity-50"
       >
-        Log In
+        {loading ? "Logging In..." : "Log In"}
       </button>
     </form>
   );

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { Invite } from "@/src/types";
+import { LoadingCursor } from "@/lib/utiils/cursor/loading";
 
 export default function ServerInvitePage() {
   const { data: session } = useSession();
@@ -16,14 +17,45 @@ export default function ServerInvitePage() {
   const [invite, setInvite] = useState<Invite | null>(null);
   const [expired, setExpired] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  //   check wthether user is an existing member of the server, if so, redirect to server page
-  useEffect(() => {});
+  LoadingCursor(loading);
 
   useEffect(() => {
     if (!inviteCode) return;
 
+    const checkUserMembership = async (serverId: string) => {
+      try {
+        const res = await fetch(
+          `/api/server/get/check-membership?userId=${session?.user?.id}&serverId=${serverId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        if (!res.ok) {
+          console.error("Failed to check user membership:", res.status);
+          return;
+        }
+        const data = await res.json();
+        if (!data.success) {
+          console.error("Error checking user membership:", data.message);
+          return;
+        }
+
+        // redirect to server if user is already a member
+        if (data.isMember) {
+          router.push(`/channels/${serverId}`);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error checking user membership:", error);
+      }
+    };
+
     const fetchInvite = async () => {
+      setLoading(true);
       try {
         const res = await fetch(
           `/api/server/invite/get/code?code=${inviteCode}`,
@@ -45,12 +77,15 @@ export default function ServerInvitePage() {
         }
 
         setInvite(data.invite);
+        checkUserMembership(data.invite.serverId);
       } catch (error) {
         console.error("Error fetching invite:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchInvite();
-  }, [inviteCode, router]);
+  }, [inviteCode, router, session?.user.id]);
 
   useEffect(() => {
     if (session === null) {
@@ -80,7 +115,6 @@ export default function ServerInvitePage() {
       if (!res.ok) {
         console.error("Failed to add user to server:", res.status);
         alert("Failed to join server.");
-        setLoading(false);
         return;
       }
 
@@ -88,6 +122,7 @@ export default function ServerInvitePage() {
     } catch (error) {
       console.error("Error joining server:", error);
       alert("Error joining server.");
+    } finally {
       setLoading(false);
     }
   };
@@ -110,7 +145,7 @@ export default function ServerInvitePage() {
             Back
           </button>
           <button
-            className={`w-full py-[0.5rem] rounded bg-[var(--button)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${expired || loading ? "" : "hover:bg-[var(--button-hover)]"}`}
+            className={`w-full py-[0.5rem] rounded bg-[var(--button)] cursor-pointer disabled:opacity-50 ${expired || loading ? "" : "hover:bg-[var(--button-hover)]"}`}
             disabled={expired || loading}
             onClick={createServerConnection}
           >

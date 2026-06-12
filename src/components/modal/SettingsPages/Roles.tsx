@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { IRoles, IUser } from "@/src/types";
 import ProfilePicture from "@/src/components/layout/app/profilePicture";
+import { LoadingCursor } from "@/lib/utiils/cursor/loading";
 
 export default function RolesPage({
   serverId,
@@ -20,6 +21,7 @@ export default function RolesPage({
   const [loading, setLoading] = useState(false);
   const [updateRankLoading, setUpdateRankLoading] = useState(false);
   const [createRoleError, setCreateRoleError] = useState("");
+  LoadingCursor(loading);
 
   const [serverMembers, setServerMembers] = useState<IUser[]>([]);
   const [addMembersData, setAddMembersData] = useState<IRoles | null>(null);
@@ -240,6 +242,7 @@ export default function RolesPage({
   const saveChanges = () => {
     try {
       setUpdateRankLoading(true);
+      setLoading(true);
       roles.forEach(async (role) => {
         await fetch(
           `/api/server/roles/update?serverId=${serverId}&roleId=${role.id}&rank=${role.rank}`,
@@ -256,11 +259,13 @@ export default function RolesPage({
     } finally {
       setDetectChange(false);
       setUpdateRankLoading(false);
+      setLoading(false);
     }
   };
 
   const handleAddUser = async (userId: string, roleId: string) => {
     try {
+      setLoading(true);
       const res = await fetch(
         `/api/server/roles/update/member/add?serverId=${serverId}&roleId=${roleId}&userId=${userId}`,
         {
@@ -293,11 +298,14 @@ export default function RolesPage({
       );
     } catch (error) {
       console.error("Error adding user to role:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleRemoveUser = async (userId: string, roleId: string) => {
     try {
+      setLoading(true);
       const res = await fetch(
         `/api/server/roles/update/member/remove?serverId=${serverId}&roleId=${roleId}&userId=${userId}`,
         {
@@ -331,6 +339,8 @@ export default function RolesPage({
       );
     } catch (error) {
       console.error("Error removing user from role:", error);
+    } finally {
+      setLoading(false);
     }
   };
 

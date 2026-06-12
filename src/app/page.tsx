@@ -16,7 +16,18 @@ export default function Home() {
     <div>
       <Header></Header>
       <main className="flex column items-center justify-center h-[calc(100vh-6rem)]">
-        <div>Landing Page</div>
+        <div className="text-[1.5rem]">Landing Page</div>
+        <div className="italic">
+          For demo accounts, my{" "}
+          <a
+            href="https://github.com/JamiePham001/messaging-app"
+            target="_blank"
+            className="underline"
+          >
+            GitHub
+          </a>{" "}
+          project page contains credentials for testing.
+        </div>
         {session?.user && (
           <div>
             Welcome! <SignOut />

@@ -9,6 +9,7 @@ import type { IRoles, IServerGroup } from "@/src/types";
 import { useSession } from "next-auth/react";
 import ServerSettings from "@/src/components/modal/ServerSettings";
 import ServerInvite from "@/src/components/modal/ServerInvite";
+import { LoadingCursor } from "@/lib/utiils/cursor/loading";
 
 // tool tip will render into document.body via a portal to avoid clipping issues
 function CreateChannelButton({ action }: { action: () => void }) {
@@ -156,6 +157,8 @@ export default function ServerContent() {
   const { data: session } = useSession();
   const [userRoles, setUserRoles] = useState<IRoles[]>([]);
   const [serverChannels, setServerChannels] = useState<IServerGroup[]>([]);
+  const [loading, setLoading] = useState(false);
+  LoadingCursor(loading);
 
   useEffect(() => {
     if (!serverId) return router.push("/channels/me");
@@ -172,7 +175,7 @@ export default function ServerContent() {
           },
         );
         const data = await response.json();
-        setServerChannels(data.filteredGroups);
+        setServerChannels(data.filteredGroups ?? []);
       } catch (error) {
         console.error("Failed to fetch server channels:", error);
       }
@@ -180,6 +183,7 @@ export default function ServerContent() {
 
     const fetchUserRoles = async () => {
       if (!session?.user?.id) return;
+      setLoading(true);
 
       try {
         const res = await fetch(
@@ -203,6 +207,8 @@ export default function ServerContent() {
         setUserRoles(userRolesData);
       } catch (error) {
         console.error("Error fetching roles:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -222,7 +228,7 @@ export default function ServerContent() {
               className="px-[10px] py-[3px] rounded hover:bg-[var(--hover)] cursor-pointer"
               onClick={() => setShowSettingsModal(true)}
             >
-              {serverChannels[0]?.server.name}
+              {serverChannels[0]?.server.name ?? ""}
             </div>
             <div
               className="p-[0.1rem] hover:bg-[var(--hover)] rounded cursor-pointer"
@@ -234,7 +240,7 @@ export default function ServerContent() {
         ) : (
           <div className="w-full flex justify-between items-center">
             <div className="px-[10px] py-[3px] rounded ">
-              {serverChannels[0]?.server.name}
+              {serverChannels[0]?.server.name ?? ""}
             </div>
             <div
               className="p-[0.1rem] hover:bg-[var(--hover)] rounded cursor-pointer"

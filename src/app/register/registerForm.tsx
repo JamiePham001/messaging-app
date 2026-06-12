@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { LoadingCursor } from "@/lib/utiils/cursor/loading";
 
 export default function RegisterForm({
   callbackUrl,
@@ -10,7 +11,9 @@ export default function RegisterForm({
   callbackUrl?: string;
 }) {
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  LoadingCursor(loading);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -23,6 +26,7 @@ export default function RegisterForm({
     const password = formData.get("password") as string;
 
     try {
+      setLoading(true);
       const response = await fetch("/api/user/register", {
         method: "POST",
         headers: {
@@ -34,6 +38,7 @@ export default function RegisterForm({
       if (!response.ok) {
         const data = await response.json();
         setError(data.message ?? "Failed to create user");
+        setLoading(false);
         return;
       }
 
@@ -45,14 +50,17 @@ export default function RegisterForm({
 
       if (result?.error) {
         setError("Login failed after registration. Please log in manually.");
+        setLoading(false);
         return;
       }
 
       router.push(callbackUrl ?? "/channels/me");
       router.refresh();
+      setLoading(false);
     } catch (error) {
       console.error(error);
       setError("Something went wrong. Please try again.");
+      setLoading(false);
     }
   };
 
@@ -64,8 +72,9 @@ export default function RegisterForm({
       <input
         type="email"
         id="email"
+        disabled={loading}
         name="email"
-        className="bg-[var(--inputs)] h-8 rounded p-2 caret-white border-solid border-[1px] border-[dimgray]"
+        className="bg-[var(--inputs)] h-8 rounded p-2 caret-white border-solid border-[1px] border-[dimgray] disabled:opacity-50"
         required
       />
       <label htmlFor="displayName" className="flex gap-1">
@@ -74,8 +83,9 @@ export default function RegisterForm({
       <input
         type="text"
         id="displayName"
+        disabled={loading}
         name="displayName"
-        className="bg-[var(--inputs)] h-8 rounded p-2 caret-white border-solid border-[1px] border-[dimgray]"
+        className="bg-[var(--inputs)] h-8 rounded p-2 caret-white border-solid border-[1px] border-[dimgray] disabled:opacity-50"
         required
       />
       <label htmlFor="username" className="flex gap-1">
@@ -84,8 +94,9 @@ export default function RegisterForm({
       <input
         type="text"
         id="username"
+        disabled={loading}
         name="username"
-        className="bg-[var(--inputs)] h-8 rounded p-2 caret-white border-solid border-[1px] border-[dimgray]"
+        className="bg-[var(--inputs)] h-8 rounded p-2 caret-white border-solid border-[1px] border-[dimgray] disabled:opacity-50"
         required
       />
       <label htmlFor="password" className="flex gap-1">
@@ -93,9 +104,10 @@ export default function RegisterForm({
       </label>
       <input
         type="password"
+        disabled={loading}
         id="password"
         name="password"
-        className="bg-[var(--inputs)] h-8 rounded p-2 caret-white border-solid border-[1px] border-[dimgray]"
+        className="bg-[var(--inputs)] h-8 rounded p-2 caret-white border-solid border-[1px] border-[dimgray] disabled:opacity-50"
         required
       />
       {error && <p className="text-[salmon] text-sm">{error}</p>}
@@ -103,9 +115,10 @@ export default function RegisterForm({
       <br />
       <button
         type="submit"
-        className="bg-[cornflowerblue] h-8 p-2 rounded text-white pointer hover:bg-[dodgerblue] transition-colors duration-300 justify-center items-center flex"
+        disabled={loading}
+        className="bg-[cornflowerblue] h-8 p-2 rounded text-white pointer hover:bg-[dodgerblue] transition-colors duration-300 justify-center items-center flex disabled:opacity-50"
       >
-        Create Account
+        {loading ? "Creating Account..." : "Create Account"}
       </button>
     </form>
   );

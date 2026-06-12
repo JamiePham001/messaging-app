@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import type { IUser, IRoles, IServerGroup, IServer } from "@/src/types";
+import { LoadingCursor } from "@/lib/utiils/cursor/loading";
 
 interface ModalProps {
   onClose: () => void;
@@ -51,6 +52,7 @@ export default function CreateServerGroup({
   const [privateCheck, setPrivateCheck] = useState(false);
   const [categoryName, setCategoryName] = useState("");
   const [loading, setLoading] = useState(false);
+  LoadingCursor(loading);
 
   const handleCheck = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPrivateCheck(event.target.checked); // event.target.checked is true/false

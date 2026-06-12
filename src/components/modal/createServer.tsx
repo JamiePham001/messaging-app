@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { IServer } from "@/src/types";
+import { LoadingCursor } from "@/lib/utiils/cursor/loading";
 
 interface ModalProps {
   onClose: () => void;
@@ -32,6 +33,7 @@ const Modal = ({ onClose, setServers }: ModalProps) => {
   const [serverName, setServerName] = useState<string>("");
   const [pageIndex, setPageIndex] = useState(0);
   const [loading, setLoading] = useState(false);
+  LoadingCursor(loading);
 
   const handleCloseClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();

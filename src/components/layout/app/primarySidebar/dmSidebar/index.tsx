@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ChannelProvider, usePresenceListener } from "ably/react";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { LoadingCursor } from "@/lib/utiils/cursor/loading";
 
 interface IChannel {
   id: string;
@@ -34,6 +35,8 @@ export default function DMSidebar({ userId }: { userId?: string }) {
 
 function InnerDMSidebar({ userId }: { userId?: string }) {
   const [channels, setChannels] = useState<IChannelWithUsers[]>([]);
+  const [loading, setLoading] = useState(false);
+  LoadingCursor(loading);
 
   const params = useParams<{ channelId: string }>();
   const channelId = params?.channelId;
@@ -46,6 +49,7 @@ function InnerDMSidebar({ userId }: { userId?: string }) {
   useEffect(() => {
     if (!userId) return;
     const fetchUserChannels = async () => {
+      setLoading(true);
       try {
         fetch(`/api/channels/get/user/${userId}`).then((res) =>
           res.json().then((data) => {
@@ -58,6 +62,8 @@ function InnerDMSidebar({ userId }: { userId?: string }) {
         );
       } catch (error) {
         console.error("Failed to fetch channels:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchUserChannels();
@@ -69,6 +75,7 @@ function InnerDMSidebar({ userId }: { userId?: string }) {
     if (channels.find((c) => c.id === channelId)) return;
 
     const fetchUserChannels = async () => {
+      setLoading(true);
       try {
         fetch(`/api/channels/get/user/${userId}`).then((res) =>
           res.json().then((data) => {
@@ -81,6 +88,8 @@ function InnerDMSidebar({ userId }: { userId?: string }) {
         );
       } catch (error) {
         console.error("Failed to fetch channels:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -115,27 +124,6 @@ function InnerDMSidebar({ userId }: { userId?: string }) {
 
     setVisible(channelId);
   }, [channelId, channels, userId]);
-
-  const onSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const channelId = e.currentTarget.getAttribute("data-channel-id");
-    if (!channelId) {
-      console.error("Channel ID not found on form");
-      return;
-    }
-
-    try {
-      fetch("/api/channels/update", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ channelId }),
-      });
-    } catch (error) {
-      console.error("Failed to update channel visibility:", error);
-    }
-  };
 
   const setInvisible = async (channelId: string) => {
     try {
@@ -198,26 +186,21 @@ function InnerDMSidebar({ userId }: { userId?: string }) {
                         </div>
                       </div>
                       <div>
-                        <form
-                          onSubmit={onSubmit}
-                          method="PATCH"
-                          data-channel-id={channel.id}
-                        >
+                        <div>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setInvisible(channel.id);
                               if (channelId === channel.id) {
                                 router.push("/channels/me");
-                                // router.refresh();
                               }
                             }}
-                            type="submit"
+                            type="button"
                             className="flex items-center justify-center w-[2rem] h-[2rem] text-[1rem] cursor-pointer rounded-[2rem] text-DimGrey hover:text-white"
                           >
                             x
                           </button>
-                        </form>
+                        </div>
                       </div>
                     </Link>
                   </div>
