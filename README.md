@@ -3,7 +3,7 @@
 A full-stack Discord-inspired messaging application built with Next.js 16. The project mirrors Discord's core GUI and feature set, focusing on real-time messaging, a multi-server/multi-channel architecture, and role-based access control.
 
 ## Demo
-[Link](https://transcendent-begonia-849e08.netlify.app) to the hoested application on Netlify.
+[Link](https://transcendent-begonia-849e08.netlify.app) to the hosted application on Netlify.
 
 ### Demo accounts:
 **User 1:**  
