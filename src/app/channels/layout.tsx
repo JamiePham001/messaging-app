@@ -38,8 +38,6 @@ export default async function ChannelsLayout({
 }>) {
   const { user } = await getPageData();
 
-  console.log("User status:", user);
-
   if (user.status !== "ONLINE") {
     try {
       await setStatus(user.email!, "ONLINE");

@@ -1,16 +1,11 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
 import { SignOut } from "../components/auth/sign-out-btn";
 import { Header } from "@/components/layout/header";
 
 export default function Home() {
   const { data: session } = useSession();
-
-  useEffect(() => {
-    console.log(session);
-  }, [session]);
 
   return (
     <div>

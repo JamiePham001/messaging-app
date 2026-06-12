@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import type { IUser, IRoles, IServerGroup, IServer } from "@/src/types";
 import { LoadingCursor } from "@/lib/utiils/cursor/loading";
@@ -172,7 +171,6 @@ export default function CreateServerGroup({
       const data = await res.json();
       const newGroup = data.serverGroup as IServerGroup;
       setServerChannels((prevGroups) => [...prevGroups, newGroup]);
-      console.log("Category created successfully:", data);
     } catch (error) {
       console.error("Error creating category:", error);
     } finally {

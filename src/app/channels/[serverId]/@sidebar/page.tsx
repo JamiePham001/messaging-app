@@ -2,7 +2,6 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import ChatBox from "@/src/components/layout/app/ably/ChatBox";
 import { ChatRoomProvider } from "@ably/chat/react";
 import MemberSidebar from "@/src/components/layout/app/communityServer/MemberSidebar";
@@ -46,7 +45,6 @@ export default function ServerPage() {
   const [chatData, setChatData] = useState<IChatData | null>(null);
   const serverId = params?.serverId;
   const router = useRouter();
-  const { data: session } = useSession();
 
   useEffect(() => {
     const fetchChatData = async () => {

@@ -95,7 +95,6 @@ export default function ChatBox({
 
     if (isServer) {
       fetchServerNames();
-      console.log("fetching server names for serverId", serverId);
     } else {
       if (chatData) {
         setNames(chatData.users);

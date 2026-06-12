@@ -9,6 +9,7 @@ import type {
   IServer,
   IChannel,
 } from "@/src/types";
+import { LoadingCursor } from "@/lib/utiils/cursor/loading";
 
 interface ModalProps {
   onClose: () => void;
@@ -59,6 +60,7 @@ export default function CreateServerChannel({
   const [privateCheck, setPrivateCheck] = useState(false);
   const [channelName, setChannelName] = useState("");
   const [loading, setLoading] = useState(false);
+  LoadingCursor(loading);
 
   const handleCheck = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPrivateCheck(event.target.checked); // event.target.checked is true/false
@@ -186,7 +188,6 @@ export default function CreateServerChannel({
             : group,
         ),
       );
-      console.log("Channel created successfully:", data);
     } catch (error) {
       console.error("Error creating channel:", error);
     } finally {

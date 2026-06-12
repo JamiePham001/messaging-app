@@ -103,13 +103,6 @@ export default function Pending({ userId }: PageParams) {
       });
   };
 
-  useEffect(() => {
-    if (receivedRequests.length > 0 || sentRequests.length > 0) {
-      console.log("Received Requests:", receivedRequests);
-      console.log("Sent Requests:", sentRequests);
-    }
-  }, [receivedRequests, sentRequests]);
-
   return (
     <div className="w-full h-full flex flex-col p-[2rem] pt-[1rem] gap-[1rem]">
       {receivedRequests.length === 0 ? (

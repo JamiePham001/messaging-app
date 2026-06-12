@@ -62,7 +62,6 @@ export default function DirectMessage() {
           .then((res) => res.json())
           .then((data) => {
             setChatData(data.channel);
-            console.log("Fetched chat data:", data.channel);
           })
           .catch((err) => {
             console.error(err);

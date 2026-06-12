@@ -230,7 +230,6 @@ export default function RolesPage({
       setRoleName("");
       setIsAdmin(false);
       setPageIndex(0);
-      console.log("Role created successfully:", data);
     } catch (error) {
       setCreateRoleError("Failed to create role");
       console.error("Error creating role:", error);

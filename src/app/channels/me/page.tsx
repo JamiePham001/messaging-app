@@ -53,10 +53,6 @@ export default function LoggedUser() {
       });
   }, [userId]);
 
-  useEffect(() => {
-    console.log("Friends List Updated:", friendsList);
-  }, [friendsList]);
-
   return (
     <main className="flex flex-col h-full w-full [border-top:1px_solid_DimGray] [border-left:1px_solid_DimGray] bg-[var(--secondary)]">
       <FriendsNavbar array={menuItems} setNavId={setNavId} navId={navId} />

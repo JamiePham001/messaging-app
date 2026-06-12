@@ -94,7 +94,6 @@ function ContextMenu({
             x: e.pageX,
             y: e.pageY,
           });
-          console.log("Right Click", e.pageX, e.pageY);
         }}
       >
         {children}
@@ -218,10 +217,6 @@ export default function ServerContent() {
 
     fetchUserRoles();
   }, [serverId, router, session?.user?.id]);
-
-  useEffect(() => {
-    console.log("Updated server channels:", serverChannels);
-  }, [serverChannels]);
 
   return (
     <div className="flex flex-col h-full w-full ">
