@@ -24,6 +24,13 @@ export const GET = auth(async function GET(req: NextAuthRequest) {
 
   try {
     const membership = await checkUserMembership(serverId, userId);
+
+    if (!membership) {
+      return NextResponse.json(
+        { success: false, message: "User is not a member of the server" },
+        { status: 404 },
+      );
+    }
     return NextResponse.json({ success: true, membership });
   } catch (error) {
     return NextResponse.json(
