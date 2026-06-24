@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { IServer } from "@/types/index";
 import router from "next/router";
+import { LoadingCursor } from "@/lib/utiils/cursor/loading";
 
 interface ModalProps {
   close: () => void;
@@ -16,6 +16,8 @@ export default function DeleteServer({
   serverName,
 }: ModalProps) {
   const [inputValue, setInputValue] = useState("");
+  const [loading, setLoading] = useState(false);
+  LoadingCursor(loading);
 
   const handleCloseClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -23,6 +25,7 @@ export default function DeleteServer({
   };
 
   const onDeleteServer = async () => {
+    setLoading(true);
     try {
       const res = await fetch(
         `/api/server/delete?serverId=${serverId}&isOwner=${isOwner}`,
@@ -44,6 +47,8 @@ export default function DeleteServer({
       }
     } catch (error) {
       console.error("Error deleting server:", error);
+    } finally {
+      setLoading(false);
     }
   };
 

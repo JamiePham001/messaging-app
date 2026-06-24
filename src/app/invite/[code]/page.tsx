@@ -45,7 +45,6 @@ export default function ServerInvitePage() {
         }
 
         // redirect to server if user is already a member
-
         router.push(`/channels/${serverId}`);
         setLoading(false);
       } catch (error) {

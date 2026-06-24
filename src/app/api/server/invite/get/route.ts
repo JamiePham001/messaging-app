@@ -23,6 +23,21 @@ export const GET = auth(async function GET(req: NextAuthRequest) {
 
   try {
     const invite = await checkServerInviteExists(serverId);
+
+    if (invite?.expiresAt && new Date(invite.expiresAt) < new Date()) {
+      return NextResponse.json(
+        { success: false, message: "Invite has expired" },
+        { status: 404 },
+      );
+    }
+
+    if (!invite) {
+      return NextResponse.json(
+        { success: false, message: "Invite not found" },
+        { status: 404 },
+      );
+    }
+
     return NextResponse.json({ success: true, invite });
   } catch (error) {
     return NextResponse.json(

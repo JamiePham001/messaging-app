@@ -58,7 +58,6 @@ export default function AddFriend({ userId }: { userId: string }) {
     setError("");
     setSuccess("Friend request sent");
     setUsername("");
-    const requestData = data.friendRequest;
   };
   return (
     <div className="w-full h-full flex flex-col p-[2rem] gap-[1rem]">
