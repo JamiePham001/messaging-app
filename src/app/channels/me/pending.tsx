@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import ProfilePicture from "@/src/components/layout/app/profilePicture";
+import { getCached, setCache, invalidateCache } from "@/lib/utils/cache";
 
 interface IFriendRequest {
   id: string;
@@ -25,14 +26,16 @@ interface PageParams {
   userId?: string;
 }
 
+const REQUESTS_CACHE_KEY = "friend-requests";
+
 export default function Pending({ userId }: PageParams) {
-  const [receivedRequests, setReceivedRequests] = useState<IBaseUser[]>([]);
-  const [sentRequests, setSentRequests] = useState<IBaseUser[]>([]);
+  const cachedData = getCached<{ received: IBaseUser[]; sent: IBaseUser[] }>(REQUESTS_CACHE_KEY);
+
+  const [receivedRequests, setReceivedRequests] = useState<IBaseUser[]>(cachedData?.received ?? []);
+  const [sentRequests, setSentRequests] = useState<IBaseUser[]>(cachedData?.sent ?? []);
 
   useEffect(() => {
     if (!userId) return;
-
-    // fetch received friend requests
     fetch(`/api/friends/get/requests?userId=${userId}`, {
       method: "GET",
     })
@@ -59,6 +62,19 @@ export default function Pending({ userId }: PageParams) {
       .catch((error) => {
         console.error("Error fetching sent friend requests:", error);
       });
+
+    // Cache the results once both fetches complete
+    Promise.all([
+      fetch(`/api/friends/get/requests?userId=${userId}`).then(r => r.json()),
+      fetch(`/api/friends/get/sent?userId=${userId}`).then(r => r.json()),
+    ]).then(([receivedRes, sentRes]) => {
+      if (receivedRes.success && sentRes.success) {
+        setCache(REQUESTS_CACHE_KEY, {
+          received: receivedRes.friendRequests,
+          sent: sentRes.friendRequests,
+        });
+      }
+    }).catch(() => {});
   }, [userId]);
 
   const acceptRequest = (requestId: string) => {
@@ -75,6 +91,7 @@ export default function Pending({ userId }: PageParams) {
           setReceivedRequests((prev) =>
             prev.filter((req) => req.sentRequests[0].id !== requestId),
           );
+          invalidateCache([REQUESTS_CACHE_KEY]);
         }
       })
       .catch((error) => {
@@ -96,6 +113,7 @@ export default function Pending({ userId }: PageParams) {
           setSentRequests((prev) =>
             prev.filter((req) => req.receivedRequests[0].id !== requestId),
           );
+          invalidateCache([REQUESTS_CACHE_KEY]);
         }
       })
       .catch((error) => {

@@ -35,6 +35,10 @@ export default function ServerInvitePage() {
         );
 
         if (!res.ok) {
+          // 404 means user is not a member — this is expected for invite flow
+          if (res.status === 404) {
+            return router.push(`/channels/me`);
+          }
           console.error("Failed to check user membership:", res.status);
           return;
         }

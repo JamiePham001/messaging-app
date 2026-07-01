@@ -10,6 +10,10 @@ import { useSession } from "next-auth/react";
 import ServerSettings from "@/src/components/modal/ServerSettings";
 import ServerInvite from "@/src/components/modal/ServerInvite";
 import { LoadingCursor } from "@/lib/utiils/cursor/loading";
+import { getCached, setCache, invalidateCache } from "@/lib/utils/cache";
+
+const ROLES_CACHE_KEY = "roles";
+const CHANNELS_CACHE_KEY = "channels";
 
 // tool tip will render into document.body via a portal to avoid clipping issues
 function CreateChannelButton({ action }: { action: () => void }) {
@@ -168,6 +172,14 @@ export default function ServerContent() {
           roles.length > 0
             ? `&userRoles[]=${roles.map((role) => role.id).join("&userRoles[]=")}`
             : "";
+        const cacheKey = `${CHANNELS_CACHE_KEY}::${serverId}::${roleParams}`;
+        const cachedChannels = getCached<IServerGroup[]>(cacheKey);
+
+        if (cachedChannels && cachedChannels.length > 0) {
+          setServerChannels(cachedChannels);
+          return;
+        }
+
         const response = await fetch(
           `/api/server/channelGroup/get?serverId=${serverId}${roleParams}`,
           {
@@ -179,6 +191,7 @@ export default function ServerContent() {
         );
         const data = await response.json();
         setServerChannels(data.filteredGroups ?? []);
+        setCache(cacheKey, data.filteredGroups ?? []);
       } catch (error) {
         console.error("Failed to fetch server channels:", error);
       }
@@ -189,6 +202,15 @@ export default function ServerContent() {
       setLoading(true);
 
       try {
+        const cacheKey = `${ROLES_CACHE_KEY}::${serverId}`;
+        const cachedRoles = getCached<IRoles[]>(cacheKey);
+
+        if (cachedRoles && cachedRoles.length > 0) {
+          setUserRoles(cachedRoles);
+          await fetchChannels(cachedRoles);
+          return;
+        }
+
         const res = await fetch(
           `/api/server/roles/get/userId?serverId=${serverId}&userId=${session.user.id}`,
           {
@@ -206,6 +228,7 @@ export default function ServerContent() {
 
         const data = await res.json();
         const userRolesData = data.roles;
+        setCache(cacheKey, userRolesData);
         await fetchChannels(userRolesData);
         setUserRoles(userRolesData);
       } catch (error) {

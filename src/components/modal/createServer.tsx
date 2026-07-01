@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { IServer } from "@/src/types";
 import { LoadingCursor } from "@/lib/utiils/cursor/loading";
+import { invalidateCache } from "@/lib/utils/cache";
+
+const SERVERS_CACHE_KEY = "servers";
 
 interface ModalProps {
   onClose: () => void;
@@ -152,6 +155,7 @@ const Modal = ({ onClose, setServers }: ModalProps) => {
       const channelData = channelRawData.channel;
 
       setServers((prevServers) => [...prevServers, serverData]);
+      invalidateCache([SERVERS_CACHE_KEY]);
       onClose();
       toggleBtns(true);
       router.push(`/channels/${serverData.id}/${channelData.id}`);

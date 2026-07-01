@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ChatBox from "@/src/components/layout/app/ably/ChatBox";
 import { ChatRoomProvider } from "@ably/chat/react";
+import { getCached, setCache } from "@/lib/utils/cache";
+
+const CHANNEL_CACHE_KEY = "channel-detail";
 
 interface IChannel {
   id: string;
@@ -53,6 +56,14 @@ export default function DirectMessage() {
 
     const fetchChatData = async () => {
       try {
+        const cacheKey = `${CHANNEL_CACHE_KEY}::${channelId}`;
+        const cachedChannel = getCached<IChatData>(cacheKey);
+
+        if (cachedChannel) {
+          setChatData(cachedChannel);
+          return;
+        }
+
         fetch(`/api/channels/get/${channelId}`, {
           method: "GET",
           headers: {
@@ -62,6 +73,7 @@ export default function DirectMessage() {
           .then((res) => res.json())
           .then((data) => {
             setChatData(data.channel);
+            setCache(cacheKey, data.channel);
           })
           .catch((err) => {
             console.error(err);

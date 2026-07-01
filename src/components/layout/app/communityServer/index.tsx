@@ -5,6 +5,9 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { IServer } from "@/src/types";
 import { useParams } from "next/navigation";
+import { getCached, setCache, invalidateCache } from "@/lib/utils/cache";
+
+const SERVERS_CACHE_KEY = "servers";
 
 export default function CommunityServer() {
   const [showModal, setShowModal] = useState(false);
@@ -18,6 +21,13 @@ export default function CommunityServer() {
 
   useEffect(() => {
     if (!userId) return;
+
+    // Check cache first
+    const cachedServers = getCached<IServer[]>(SERVERS_CACHE_KEY);
+    if (cachedServers && cachedServers.length > 0) {
+      setServers(cachedServers);
+      return;
+    }
 
     const fetchServers = async () => {
       try {
@@ -36,11 +46,8 @@ export default function CommunityServer() {
           return;
         }
 
-        if (serverId) {
-          setServers(data.servers);
-          return;
-        }
         setServers(data.servers);
+        setCache(SERVERS_CACHE_KEY, data.servers);
       } catch (error) {
         console.error("Failed to fetch servers:", error);
       }
@@ -48,6 +55,11 @@ export default function CommunityServer() {
 
     fetchServers();
   }, [userId, serverId]);
+
+  // Invalidate cache when a new server is created or joined
+  useEffect(() => {
+    invalidateCache([SERVERS_CACHE_KEY]);
+  }, []);
 
   return (
     <section className="flex flex-col items-center justify-start w-[4rem] h-full p-[0.5rem] gap-[0.5rem]">

@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ChatBox from "@/src/components/layout/app/ably/ChatBox";
 import { ChatRoomProvider } from "@ably/chat/react";
+import { getCached, setCache } from "@/lib/utils/cache";
+
+const SERVER_CHANNELS_CACHE_KEY = "server-channels";
 
 interface IChannel {
   id: string;
@@ -49,6 +52,16 @@ export default function ChannelPage() {
   useEffect(() => {
     const fetchChatData = async () => {
       try {
+        const cacheKey = `${SERVER_CHANNELS_CACHE_KEY}::${serverId}`;
+        const cachedChannels = getCached<IChannel[]>(cacheKey);
+
+        if (cachedChannels && cachedChannels.length > 0) {
+          setChatData(
+            (cachedChannels as unknown as IChatData[]).find((c: IChatData) => c.id === channelId) || null,
+          );
+          return;
+        }
+
         const res = await fetch(
           `/api/channels/get/serverId?serverId=${serverId}`,
         );
@@ -60,6 +73,7 @@ export default function ChannelPage() {
         const data = await res.json();
 
         const channelData = data.channels;
+        setCache(cacheKey, channelData);
 
         if (!channelId) {
           setChatData(channelData[0]);

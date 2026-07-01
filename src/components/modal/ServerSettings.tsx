@@ -5,6 +5,9 @@ import { useState, useEffect } from "react";
 import RolesPage from "./SettingsPages/Roles";
 import DeleteServer from "./SettingsPages/DeleteServer";
 import { IRoles, IServer } from "@/src/types";
+import { getCached, setCache } from "@/lib/utils/cache";
+
+const SERVER_CACHE_KEY = "server-detail";
 
 interface ModalProps {
   onClose: () => void;
@@ -79,6 +82,14 @@ const ServerSettings = ({
   useEffect(() => {
     const fetchServerData = async () => {
       try {
+        const cacheKey = `${SERVER_CACHE_KEY}::${serverId}`;
+        const cachedServer = getCached<IServer>(cacheKey);
+
+        if (cachedServer) {
+          setServerData(cachedServer);
+          return;
+        }
+
         const res = await fetch(`/api/server/get?serverId=${serverId}`, {
           method: "GET",
           headers: {
@@ -93,6 +104,7 @@ const ServerSettings = ({
         const data = await res.json();
         if (data.success) {
           setServerData(data.server);
+          setCache(cacheKey, data.server);
         } else {
           console.error("Error fetching server data:", data.message);
         }

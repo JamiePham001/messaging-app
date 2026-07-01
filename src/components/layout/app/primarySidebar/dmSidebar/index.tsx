@@ -5,6 +5,9 @@ import { ChannelProvider, usePresenceListener } from "ably/react";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { LoadingCursor } from "@/lib/utiils/cursor/loading";
+import { getCached, setCache, invalidateCache } from "@/lib/utils/cache";
+
+const USER_CHANNELS_CACHE_KEY = "user-channels";
 
 interface IChannel {
   id: string;
@@ -51,6 +54,15 @@ function InnerDMSidebar({ userId }: { userId?: string }) {
     const fetchUserChannels = async () => {
       setLoading(true);
       try {
+        const cacheKey = `${USER_CHANNELS_CACHE_KEY}::${userId}`;
+        const cachedChannels = getCached<IChannelWithUsers[]>(cacheKey);
+
+        if (cachedChannels && cachedChannels.length > 0) {
+          setChannels(cachedChannels);
+          setLoading(false);
+          return;
+        }
+
         fetch(`/api/channels/get/user/${userId}`).then((res) =>
           res.json().then((data) => {
             if (!data.success) {
@@ -58,6 +70,7 @@ function InnerDMSidebar({ userId }: { userId?: string }) {
               return;
             }
             setChannels(data.channel ?? []);
+            setCache(cacheKey, data.channel ?? []);
           }),
         );
       } catch (error) {
@@ -74,26 +87,7 @@ function InnerDMSidebar({ userId }: { userId?: string }) {
     if (!userId) return;
     if (channels.find((c) => c.id === channelId)) return;
 
-    const fetchUserChannels = async () => {
-      setLoading(true);
-      try {
-        fetch(`/api/channels/get/user/${userId}`).then((res) =>
-          res.json().then((data) => {
-            if (!data.success) {
-              console.error("Failed to fetch channels:", data.message);
-              return;
-            }
-            setChannels(data.channel ?? []);
-          }),
-        );
-      } catch (error) {
-        console.error("Failed to fetch channels:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const setVisible = async (channelId: string) => {
+    const setVisible = async () => {
       try {
         const res = await fetch(`/api/channels/update`, {
           method: "PATCH",
@@ -116,13 +110,13 @@ function InnerDMSidebar({ userId }: { userId?: string }) {
 
         if (!data.success) return;
 
-        fetchUserChannels();
+        invalidateCache([`${USER_CHANNELS_CACHE_KEY}::${userId}`]);
       } catch (error) {
         console.error("Failed to update channel visibility:", error);
       }
     };
 
-    setVisible(channelId);
+    setVisible();
   }, [channelId, channels, userId]);
 
   const setInvisible = async (channelId: string) => {
@@ -144,7 +138,7 @@ function InnerDMSidebar({ userId }: { userId?: string }) {
         return;
       }
 
-      setChannels((prev) => prev.filter((c) => c.id !== channelId));
+      invalidateCache([`${USER_CHANNELS_CACHE_KEY}::${userId}`]);
     } catch (error) {
       console.error("Failed to update channel visibility:", error);
     }

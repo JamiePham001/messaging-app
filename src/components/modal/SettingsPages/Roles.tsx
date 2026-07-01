@@ -2,6 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { IRoles, IUser } from "@/src/types";
 import ProfilePicture from "@/src/components/layout/app/profilePicture";
 import { LoadingCursor } from "@/lib/utiils/cursor/loading";
+import { getCached, setCache } from "@/lib/utils/cache";
+
+const ROLES_CACHE_KEY = "roles";
+const MEMBERS_CACHE_KEY = "members";
 
 export default function RolesPage({
   serverId,
@@ -44,6 +48,15 @@ export default function RolesPage({
   useEffect(() => {
     const fetchUserRoles = async () => {
       try {
+        const cacheKey = `${ROLES_CACHE_KEY}::${serverId}`;
+        const cachedRoles = getCached<IRoles[]>(cacheKey);
+
+        if (cachedRoles && cachedRoles.length > 0) {
+          setRoles(cachedRoles);
+          setInitialRoles(cachedRoles);
+          return;
+        }
+
         const res = await fetch(
           `/api/server/roles/get/serverId?serverId=${serverId}`,
           {
@@ -61,6 +74,7 @@ export default function RolesPage({
 
         const data = await res.json();
         const userRolesData = data.roles;
+        setCache(cacheKey, userRolesData);
         const filteredRoles = userRolesData;
         setRoles(filteredRoles);
         setInitialRoles(filteredRoles);
@@ -71,6 +85,14 @@ export default function RolesPage({
 
     const fetchServerMembers = async () => {
       try {
+        const cacheKey = `${MEMBERS_CACHE_KEY}::${serverId}`;
+        const cachedMembers = getCached<IUser[]>(cacheKey);
+
+        if (cachedMembers && cachedMembers.length > 0) {
+          setServerMembers(cachedMembers);
+          return;
+        }
+
         const res = await fetch(
           `/api/server/get/members?serverId=${serverId}`,
           {
@@ -88,6 +110,7 @@ export default function RolesPage({
 
         const data = await res.json();
         const serverMembersData = data.members;
+        setCache(cacheKey, serverMembersData);
         setServerMembers(serverMembersData);
       } catch (error) {
         console.error("Error fetching server members:", error);
